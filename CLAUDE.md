@@ -124,14 +124,29 @@ Plasmo Framework を使用して開発されており、以下の主要機能を
 
 ### ディレクトリ構成
 
-現在の構成を維持（Plasmo のデフォルト構成）:
+Package by Feature パターンを採用:
 
 ```
 src/
-  popup.tsx       # ポップアップ UI
-  background.ts   # バックグラウンドスクリプト
-  assets/         # アイコンなどのアセット
+  popup.tsx                    # ポップアップエントリポイント
+  background.ts                # バックグラウンドエントリポイント
+  assets/                      # アイコンなどのアセット
+  features/                    # 機能別ディレクトリ
+    tab-counter/              # タブ数カウント機能
+      service.ts              # ビジネスロジック
+    tab-clipboard/            # タブURL コピー/ペースト機能
+      components/             # React コンポーネント
+        ClipboardButtons.tsx
+      service.ts              # ビジネスロジック
+      types.ts                # 型定義
+    tab-duplicates/           # 重複タブ削除機能
+      components/
+        RemoveDuplicatesButton.tsx
+      service.ts              # ビジネスロジック
+      types.ts                # 型定義
 ```
+
+各機能は独立したモジュールとして実装し、popup.tsx と background.ts から必要な機能をインポートして使用します。
 
 ### コードスタイル
 
