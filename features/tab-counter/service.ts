@@ -1,12 +1,10 @@
 export const updateBadge = async (): Promise<void> => {
   const windows = await chrome.windows.getAll({ populate: true });
-  let totalTabs = 0;
 
-  windows.forEach(window => {
-    if (window.tabs) {
-      totalTabs += window.tabs.length;
-    }
-  });
+  const totalTabs = windows.reduce(
+    (total, window) => total + (window.tabs?.length ?? 0),
+    0,
+  );
 
   chrome.action.setBadgeText({ text: totalTabs.toString() });
   chrome.action.setBadgeBackgroundColor({ color: '#4285F4' });
