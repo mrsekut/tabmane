@@ -1,20 +1,22 @@
 import type { TabUrl } from './types';
 
-export const copyTabUrls = async (): Promise<void> => {
+export const copyTabUrls = async () => {
   const currentWindow = await chrome.windows.getCurrent({ populate: true });
   const urls = extractUrlsFromTabs(currentWindow.tabs);
   await navigator.clipboard.writeText(urls.join('\n'));
+  return urls.length;
 };
 
-export const pasteTabUrls = async (): Promise<void> => {
+export const pasteTabUrls = async () => {
   const text = await navigator.clipboard.readText();
   const urls = parseUrlsFromText(text);
+  const validUrls = urls.filter(isValidUrl);
 
-  urls.forEach(url => {
-    if (isValidUrl(url)) {
-      chrome.tabs.create({ url });
-    }
+  validUrls.forEach(url => {
+    chrome.tabs.create({ url });
   });
+
+  return validUrls.length;
 };
 
 const extractUrlsFromTabs = (tabs?: chrome.tabs.Tab[]): TabUrl[] => {
