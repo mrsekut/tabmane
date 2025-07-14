@@ -9,6 +9,7 @@ export const RemoveDuplicatesButton = () => {
         count === 0 ? 'No duplicates found' : `Removed ${count} duplicate tabs`
       }
       errorMessage="Failed to remove duplicates"
+      variant="danger"
     >
       Remove Duplicates
     </ActionButton>

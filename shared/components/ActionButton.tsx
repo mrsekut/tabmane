@@ -5,6 +5,7 @@ type Props = {
   onClick: () => Promise<number>;
   successMessage: (count: number) => string;
   errorMessage: string;
+  variant?: 'default' | 'danger';
 };
 
 export const ActionButton = ({
@@ -12,9 +13,25 @@ export const ActionButton = ({
   onClick,
   successMessage,
   errorMessage,
+  variant = 'default',
 }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [buttonLabel, setButtonLabel] = useState(children);
+
+  const colors = {
+    default: {
+      background: '#4285F4',
+      hover: '#3367D6',
+      shadow: 'rgba(66, 133, 244, 0.2)',
+      hoverShadow: 'rgba(66, 133, 244, 0.3)',
+    },
+    danger: {
+      background: '#FF8C00',
+      hover: '#FF7700',
+      shadow: 'rgba(255, 140, 0, 0.2)',
+      hoverShadow: 'rgba(255, 140, 0, 0.3)',
+    },
+  };
 
   const handleClick = async () => {
     if (isLoading) return;
@@ -46,44 +63,42 @@ export const ActionButton = ({
         disabled={isLoading}
         style={{
           width: '100%',
-          padding: '12px 16px',
+          padding: '8px 12px',
           border: 'none',
-          borderRadius: 8,
-          backgroundColor: isLoading ? '#e0e0e0' : '#4285F4',
+          borderRadius: 6,
+          backgroundColor: isLoading ? '#e0e0e0' : colors[variant].background,
           color: 'white',
           cursor: isLoading ? 'not-allowed' : 'pointer',
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: 500,
           transition: 'all 0.2s ease',
-          boxShadow: isLoading ? 'none' : '0 2px 4px rgba(66, 133, 244, 0.2)',
+          boxShadow: isLoading ? 'none' : `0 2px 4px ${colors[variant].shadow}`,
           transform: isLoading ? 'none' : 'translateY(0)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 8,
+          gap: 6,
         }}
         onMouseEnter={e => {
           if (!isLoading) {
-            e.currentTarget.style.backgroundColor = '#3367D6';
+            e.currentTarget.style.backgroundColor = colors[variant].hover;
             e.currentTarget.style.transform = 'translateY(-1px)';
-            e.currentTarget.style.boxShadow =
-              '0 4px 8px rgba(66, 133, 244, 0.3)';
+            e.currentTarget.style.boxShadow = `0 4px 8px ${colors[variant].hoverShadow}`;
           }
         }}
         onMouseLeave={e => {
           if (!isLoading) {
-            e.currentTarget.style.backgroundColor = '#4285F4';
+            e.currentTarget.style.backgroundColor = colors[variant].background;
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow =
-              '0 2px 4px rgba(66, 133, 244, 0.2)';
+            e.currentTarget.style.boxShadow = `0 2px 4px ${colors[variant].shadow}`;
           }
         }}
       >
         {isLoading && (
           <div
             style={{
-              width: 16,
-              height: 16,
+              width: 14,
+              height: 14,
               border: '2px solid rgba(255, 255, 255, 0.3)',
               borderTop: '2px solid white',
               borderRadius: '50%',
