@@ -29,43 +29,103 @@ export const ActionButton = ({
     }, 2000);
   };
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleClick = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
     try {
       const count = await onClick();
       showFeedback(successMessage(count));
     } catch (error) {
       showFeedback(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div>
+    <div style={{ marginBottom: 8 }}>
       <button
         onClick={handleClick}
+        disabled={isLoading}
         style={{
-          padding: '8px 12px',
-          border: '1px solid #ddd',
-          borderRadius: 4,
-          backgroundColor: 'white',
-          cursor: 'pointer',
+          width: '100%',
+          padding: '12px 16px',
+          border: 'none',
+          borderRadius: 8,
+          backgroundColor: isLoading ? '#e0e0e0' : '#4285F4',
+          color: 'white',
+          cursor: isLoading ? 'not-allowed' : 'pointer',
           fontSize: 14,
+          fontWeight: 500,
+          transition: 'all 0.2s ease',
+          boxShadow: isLoading ? 'none' : '0 2px 4px rgba(66, 133, 244, 0.2)',
+          transform: isLoading ? 'none' : 'translateY(0)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+        }}
+        onMouseEnter={e => {
+          if (!isLoading) {
+            e.currentTarget.style.backgroundColor = '#3367D6';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow =
+              '0 4px 8px rgba(66, 133, 244, 0.3)';
+          }
+        }}
+        onMouseLeave={e => {
+          if (!isLoading) {
+            e.currentTarget.style.backgroundColor = '#4285F4';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow =
+              '0 2px 4px rgba(66, 133, 244, 0.2)';
+          }
         }}
       >
+        {isLoading && (
+          <div
+            style={{
+              width: 16,
+              height: 16,
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              borderTop: '2px solid white',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+            }}
+          />
+        )}
         {children}
       </button>
 
       <div
         style={{
           fontSize: 12,
-          color: '#4285F4',
-          marginTop: 4,
-          height: 16,
+          color: feedback.show ? '#4285F4' : 'transparent',
+          marginTop: 6,
+          height: 18,
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 500,
+          transition: 'color 0.2s ease',
         }}
       >
-        {feedback.show && feedback.message}
+        {feedback.message}
       </div>
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `,
+        }}
+      />
     </div>
   );
 };
