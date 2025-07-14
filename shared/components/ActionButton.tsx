@@ -13,23 +13,8 @@ export const ActionButton = ({
   successMessage,
   errorMessage,
 }: Props) => {
-  const [feedback, setFeedback] = useState<{
-    show: boolean;
-    message: string;
-  }>({
-    show: false,
-    message: '',
-  });
-
-  const showFeedback = (message: string) => {
-    setFeedback({ show: true, message });
-
-    setTimeout(() => {
-      setFeedback({ show: false, message: '' });
-    }, 2000);
-  };
-
   const [isLoading, setIsLoading] = useState(false);
+  const [buttonLabel, setButtonLabel] = useState(children);
 
   const handleClick = async () => {
     if (isLoading) return;
@@ -37,16 +22,25 @@ export const ActionButton = ({
     setIsLoading(true);
     try {
       const count = await onClick();
-      showFeedback(successMessage(count));
+      const message = successMessage(count);
+      setButtonLabel(message);
+
+      setTimeout(() => {
+        setButtonLabel(children);
+      }, 2000);
     } catch (error) {
-      showFeedback(errorMessage);
+      setButtonLabel(errorMessage);
+
+      setTimeout(() => {
+        setButtonLabel(children);
+      }, 2000);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div style={{ marginBottom: 8 }}>
+    <div style={{ marginBottom: 12 }}>
       <button
         onClick={handleClick}
         disabled={isLoading}
@@ -97,24 +91,8 @@ export const ActionButton = ({
             }}
           />
         )}
-        {children}
+        {buttonLabel}
       </button>
-
-      <div
-        style={{
-          fontSize: 12,
-          color: feedback.show ? '#4285F4' : 'transparent',
-          marginTop: 6,
-          height: 18,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 500,
-          transition: 'color 0.2s ease',
-        }}
-      >
-        {feedback.message}
-      </div>
 
       <style
         dangerouslySetInnerHTML={{
