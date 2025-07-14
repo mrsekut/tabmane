@@ -1,13 +1,16 @@
+import { ActionButton } from '../../shared/components/ActionButton';
 import { removeDuplicateTabs } from './service';
 
-type Props = {
-  buttonStyle: React.CSSProperties;
-};
-
-export const RemoveDuplicatesButton = ({ buttonStyle }: Props) => {
+export const RemoveDuplicatesButton = () => {
   return (
-    <button onClick={removeDuplicateTabs} style={buttonStyle}>
+    <ActionButton
+      onClick={removeDuplicateTabs}
+      successMessage={count =>
+        count === 0 ? 'No duplicates found' : `Removed ${count} duplicate tabs`
+      }
+      errorMessage="Failed to remove duplicates"
+    >
       Remove Duplicates
-    </button>
+    </ActionButton>
   );
 };

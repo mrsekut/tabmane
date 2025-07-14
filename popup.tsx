@@ -2,15 +2,6 @@ import { ClipboardButtons } from './features/tab-clipboard/ClipboardButtons';
 import { RemoveDuplicatesButton } from './features/tab-duplicates/RemoveDuplicatesButton';
 
 function IndexPopup() {
-  const buttonStyle: React.CSSProperties = {
-    padding: '8px 12px',
-    border: '1px solid #ddd',
-    borderRadius: 4,
-    backgroundColor: 'white',
-    cursor: 'pointer',
-    fontSize: 14,
-  };
-
   return (
     <div
       style={{
@@ -25,8 +16,8 @@ function IndexPopup() {
         Tab Manager
       </h3>
 
-      <ClipboardButtons buttonStyle={buttonStyle} />
-      <RemoveDuplicatesButton buttonStyle={buttonStyle} />
+      <ClipboardButtons />
+      <RemoveDuplicatesButton />
     </div>
   );
 }

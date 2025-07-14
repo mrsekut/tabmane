@@ -1,6 +1,6 @@
 import type { TabGroup, DuplicateTabIds } from './types';
 
-export const removeDuplicateTabs = async (): Promise<void> => {
+export const removeDuplicateTabs = async (): Promise<number> => {
   const currentWindow = await chrome.windows.getCurrent({ populate: true });
   const tabs = currentWindow.tabs || [];
 
@@ -9,6 +9,8 @@ export const removeDuplicateTabs = async (): Promise<void> => {
   if (duplicateIds.length > 0) {
     await chrome.tabs.remove(duplicateIds);
   }
+
+  return duplicateIds.length;
 };
 
 const findDuplicateTabIds = (tabs: chrome.tabs.Tab[]): DuplicateTabIds => {
