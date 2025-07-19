@@ -1,5 +1,4 @@
 import { ClipboardButtons } from './features/tab-clipboard/ClipboardButtons';
-import { RemoveDuplicatesButton } from './features/tab-duplicates/RemoveDuplicatesButton';
 
 function IndexPopup() {
   return (
@@ -14,10 +13,7 @@ function IndexPopup() {
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}
     >
-      <RemoveDuplicatesButton />
-      <div style={{ marginTop: 16 }}>
-        <ClipboardButtons />
-      </div>
+      <ClipboardButtons />
     </div>
   );
 }
