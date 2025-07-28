@@ -1,8 +1,8 @@
 {
   "name": "tabmane",
-  "displayName": "Tabmane",
-  "version": "0.0.1",
-  "description": "A basic Plasmo extension.",
+  "displayName": "tabmane",
+  "version": "1.0.0",
+  "description": "Simple tab management",
   "author": "mrsekut",
   "scripts": {
     "dev": "plasmo dev",
