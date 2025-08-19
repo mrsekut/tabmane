@@ -5,12 +5,22 @@ export {};
 
 type ClickTimer = NodeJS.Timeout | null;
 type BadgeColor = '#4CAF50' | '#666';
+type ClickState = {
+  count: number;
+  firstClickTime: number;
+  timer: ClickTimer;
+};
 
-const DOUBLE_CLICK_DELAY = 300;
+const DOUBLE_CLICK_DELAY = 500;
 const BADGE_DISPLAY_DURATION = 3000;
 const POPUP_DISABLE_DELAY = 100;
+const CLICK_RESET_DELAY = 600;
 
-let clickTimer: ClickTimer = null;
+let clickState: ClickState = {
+  count: 0,
+  firstClickTime: 0,
+  timer: null,
+};
 
 main();
 
@@ -25,10 +35,34 @@ function setupEventListeners() {
   });
 
   chrome.action.onClicked.addListener(async _tab => {
-    if (isSecondClick()) {
+    const now = Date.now();
+
+    if (clickState.timer) {
+      clearTimeout(clickState.timer);
+      clickState.timer = null;
+    }
+
+    if (
+      clickState.count === 0 ||
+      now - clickState.firstClickTime > CLICK_RESET_DELAY
+    ) {
+      clickState.count = 1;
+      clickState.firstClickTime = now;
+    } else {
+      clickState.count++;
+    }
+
+    if (clickState.count >= 2) {
+      clickState.count = 0;
       await handleDoubleClick();
     } else {
-      scheduleClickAction();
+      clickState.timer = setTimeout(async () => {
+        if (clickState.count === 1) {
+          await handleSingleClick();
+        }
+        clickState.count = 0;
+        clickState.timer = null;
+      }, DOUBLE_CLICK_DELAY);
     }
   });
 }
@@ -37,27 +71,8 @@ function initializePopupState() {
   chrome.action.setPopup({ popup: '' });
 }
 
-function isSecondClick() {
-  return clickTimer !== null;
-}
-
-function scheduleClickAction() {
-  clickTimer = setTimeout(async () => {
-    clickTimer = null;
-    await handleSingleClick();
-  }, DOUBLE_CLICK_DELAY);
-}
-
 async function handleDoubleClick(): Promise<void> {
-  clearClickTimer();
   await enablePopupTemporarily();
-}
-
-function clearClickTimer() {
-  if (clickTimer) {
-    clearTimeout(clickTimer);
-    clickTimer = null;
-  }
 }
 
 function setBadge(text: string, color: BadgeColor) {
@@ -81,9 +96,19 @@ async function handleSingleClick() {
 }
 
 async function enablePopupTemporarily(): Promise<void> {
-  await chrome.action.setPopup({ popup: 'popup.html' });
-  await chrome.action.openPopup();
-  setTimeout(() => {
-    chrome.action.setPopup({ popup: '' });
-  }, POPUP_DISABLE_DELAY);
+  try {
+    await chrome.action.setPopup({ popup: 'popup.html' });
+    await chrome.action.openPopup();
+
+    setTimeout(async () => {
+      try {
+        await chrome.action.setPopup({ popup: '' });
+      } catch (error) {
+        console.error('Failed to reset popup:', error);
+      }
+    }, POPUP_DISABLE_DELAY);
+  } catch (error) {
+    console.error('Failed to enable popup:', error);
+    clickState.count = 0;
+  }
 }
