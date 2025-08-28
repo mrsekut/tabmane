@@ -1,5 +1,6 @@
 import { initializeTabCounter } from './features/tab-counter/service';
 import { removeDuplicateTabs } from './features/tab-duplicates/service';
+import { logger } from './shared/services/logger';
 
 export {};
 
@@ -22,6 +23,21 @@ let clickState: ClickState = {
   timer: null,
 };
 
+// Service Workerの状態をログ出力（デバッグ用）
+chrome.runtime.onSuspend?.addListener(() => {
+  logger.info('Service Worker suspending', { clickState });
+});
+
+chrome.runtime.onStartup?.addListener(() => {
+  logger.info('Service Worker starting up');
+  // 明示的に初期化
+  clickState = {
+    count: 0,
+    firstClickTime: 0,
+    timer: null,
+  };
+});
+
 main();
 
 function main() {
@@ -36,12 +52,15 @@ function setupEventListeners() {
 
   chrome.action.onClicked.addListener(async _tab => {
     const now = Date.now();
+    const prevState = { ...clickState };
 
+    // タイマーが存在する場合は必ずクリア
     if (clickState.timer) {
       clearTimeout(clickState.timer);
       clickState.timer = null;
     }
 
+    // クリック間隔が長すぎる場合、または初回クリックの場合はリセット
     if (
       clickState.count === 0 ||
       now - clickState.firstClickTime > CLICK_RESET_DELAY
@@ -52,15 +71,30 @@ function setupEventListeners() {
       clickState.count++;
     }
 
+    logger.debug('Click detected', {
+      prevState,
+      currentState: { ...clickState },
+      timeSinceFirst: now - clickState.firstClickTime,
+    });
+
+    // ダブルクリック判定（2回以上のクリック）
     if (clickState.count >= 2) {
+      logger.info('Double click detected');
+      // 即座にカウントをリセット
       clickState.count = 0;
+      clickState.firstClickTime = 0;
       await handleDoubleClick();
     } else {
+      // シングルクリックの可能性がある場合
       clickState.timer = setTimeout(async () => {
+        // タイマー実行時に再度カウントを確認
         if (clickState.count === 1) {
+          logger.info('Single click confirmed');
           await handleSingleClick();
         }
+        // タイマー実行後は必ずリセット
         clickState.count = 0;
+        clickState.firstClickTime = 0;
         clickState.timer = null;
       }, DOUBLE_CLICK_DELAY);
     }
@@ -87,12 +121,17 @@ async function updateBadge() {
 }
 
 async function handleSingleClick() {
-  const removedCount = await removeDuplicateTabs();
-  setBadge(removedCount.toString(), '#4CAF50');
+  try {
+    const removedCount = await removeDuplicateTabs();
+    logger.info('Single click: Removed duplicate tabs', { removedCount });
+    setBadge(removedCount.toString(), '#4CAF50');
 
-  setTimeout(() => {
-    updateBadge();
-  }, BADGE_DISPLAY_DURATION);
+    setTimeout(() => {
+      updateBadge();
+    }, BADGE_DISPLAY_DURATION);
+  } catch (error) {
+    logger.error('Error in handleSingleClick', error);
+  }
 }
 
 async function enablePopupTemporarily(): Promise<void> {
@@ -104,11 +143,17 @@ async function enablePopupTemporarily(): Promise<void> {
       try {
         await chrome.action.setPopup({ popup: '' });
       } catch (error) {
-        console.error('Failed to reset popup:', error);
+        logger.error('Failed to reset popup', error);
       }
     }, POPUP_DISABLE_DELAY);
   } catch (error) {
-    console.error('Failed to enable popup:', error);
+    logger.error('Failed to enable popup', error);
+    // エラー時は完全に状態をリセット
     clickState.count = 0;
+    clickState.firstClickTime = 0;
+    if (clickState.timer) {
+      clearTimeout(clickState.timer);
+      clickState.timer = null;
+    }
   }
 }
