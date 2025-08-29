@@ -5,20 +5,38 @@ type LogEntry = {
   data?: unknown;
 };
 
+const LOG_STORAGE_KEY = 'tabmane_logs';
 const MAX_LOG_ENTRIES = 100;
 
 class Logger {
-  private logs: LogEntry[] = [];
+  private async getStoredLogs(): Promise<LogEntry[]> {
+    try {
+      const result = await chrome.storage.local.get(LOG_STORAGE_KEY);
+      return result[LOG_STORAGE_KEY] || [];
+    } catch (error) {
+      console.error('Failed to get stored logs:', error);
+      return [];
+    }
+  }
 
-  private addLog(
+  private async saveLogs(logs: LogEntry[]): Promise<void> {
+    try {
+      await chrome.storage.local.set({ [LOG_STORAGE_KEY]: logs });
+    } catch (error) {
+      console.error('Failed to save logs:', error);
+    }
+  }
+
+  private async addLog(
     level: LogEntry['level'],
     message: string,
     data?: unknown,
-  ): void {
+  ): Promise<void> {
+    const logs = await this.getStoredLogs();
     const now = Date.now();
 
     // 新しいログエントリを追加
-    this.logs.push({
+    logs.push({
       timestamp: now,
       level,
       message,
@@ -26,9 +44,11 @@ class Logger {
     });
 
     // 最大エントリ数を超えたら古いものを削除
-    if (this.logs.length > MAX_LOG_ENTRIES) {
-      this.logs = this.logs.slice(-MAX_LOG_ENTRIES);
+    if (logs.length > MAX_LOG_ENTRIES) {
+      logs.splice(0, logs.length - MAX_LOG_ENTRIES);
     }
+
+    await this.saveLogs(logs);
 
     // コンソールにも出力
     const consoleMethod =
@@ -36,28 +56,37 @@ class Logger {
     console[consoleMethod](`[${level.toUpperCase()}] ${message}`, data || '');
   }
 
-  info(message: string, data?: unknown): void {
-    this.addLog('info', message, data);
+  async info(message: string, data?: unknown): Promise<void> {
+    await this.addLog('info', message, data);
   }
 
-  error(message: string, data?: unknown): void {
-    this.addLog('error', message, data);
+  async warn(message: string, data?: unknown): Promise<void> {
+    await this.addLog('warn', message, data);
   }
 
-  debug(message: string, data?: unknown): void {
-    this.addLog('debug', message, data);
+  async error(message: string, data?: unknown): Promise<void> {
+    await this.addLog('error', message, data);
   }
 
-  getLogs(): LogEntry[] {
-    return [...this.logs].sort((a, b) => b.timestamp - a.timestamp);
+  async debug(message: string, data?: unknown): Promise<void> {
+    await this.addLog('debug', message, data);
   }
 
-  clearLogs(): void {
-    this.logs = [];
+  async getLogs(): Promise<LogEntry[]> {
+    const logs = await this.getStoredLogs();
+    return logs.sort((a, b) => b.timestamp - a.timestamp);
   }
 
-  getLogsAsText(): string {
-    const logs = this.getLogs();
+  async clearLogs(): Promise<void> {
+    try {
+      await chrome.storage.local.remove(LOG_STORAGE_KEY);
+    } catch (error) {
+      console.error('Failed to clear logs:', error);
+    }
+  }
+
+  async getLogsAsText(): Promise<string> {
+    const logs = await this.getLogs();
     return logs
       .map(log => {
         const timestamp = new Date(log.timestamp).toISOString();

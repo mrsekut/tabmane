@@ -13,8 +13,8 @@ export const LogViewer = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
 
-  const loadLogs = () => {
-    const storedLogs = logger.getLogs();
+  const loadLogs = async () => {
+    const storedLogs = await logger.getLogs();
     setLogs(storedLogs);
   };
 
@@ -22,13 +22,13 @@ export const LogViewer = () => {
     loadLogs();
   }, []);
 
-  const handleClearLogs = () => {
-    logger.clearLogs();
-    loadLogs();
+  const handleClearLogs = async () => {
+    await logger.clearLogs();
+    await loadLogs();
   };
 
   const handleCopyLogs = async () => {
-    const logsText = logger.getLogsAsText();
+    const logsText = await logger.getLogsAsText();
     try {
       await navigator.clipboard.writeText(logsText);
       setCopyMessage('Copied!');
@@ -58,7 +58,10 @@ export const LogViewer = () => {
   if (!isExpanded) {
     return (
       <button
-        onClick={() => setIsExpanded(true)}
+        onClick={() => {
+          setIsExpanded(true);
+          loadLogs();
+        }}
         style={{
           marginTop: 8,
           padding: '4px 8px',

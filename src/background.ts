@@ -24,12 +24,12 @@ let clickState: ClickState = {
 };
 
 // Service Workerの状態をログ出力（デバッグ用）
-chrome.runtime.onSuspend?.addListener(() => {
-  logger.info('Service Worker suspending', { clickState });
+chrome.runtime.onSuspend?.addListener(async () => {
+  await logger.info('Service Worker suspending', { clickState });
 });
 
-chrome.runtime.onStartup?.addListener(() => {
-  logger.info('Service Worker starting up');
+chrome.runtime.onStartup?.addListener(async () => {
+  await logger.info('Service Worker starting up');
   // 明示的に初期化
   clickState = {
     count: 0,
@@ -71,7 +71,7 @@ function setupEventListeners() {
       clickState.count++;
     }
 
-    logger.debug('Click detected', {
+    await logger.debug('Click detected', {
       prevState,
       currentState: { ...clickState },
       timeSinceFirst: now - clickState.firstClickTime,
@@ -79,7 +79,7 @@ function setupEventListeners() {
 
     // ダブルクリック判定（2回以上のクリック）
     if (clickState.count >= 2) {
-      logger.info('Double click detected');
+      await logger.info('Double click detected');
       // 即座にカウントをリセット
       clickState.count = 0;
       clickState.firstClickTime = 0;
@@ -89,7 +89,7 @@ function setupEventListeners() {
       clickState.timer = setTimeout(async () => {
         // タイマー実行時に再度カウントを確認
         if (clickState.count === 1) {
-          logger.info('Single click confirmed');
+          await logger.info('Single click confirmed');
           await handleSingleClick();
         }
         // タイマー実行後は必ずリセット
@@ -123,14 +123,14 @@ async function updateBadge() {
 async function handleSingleClick() {
   try {
     const removedCount = await removeDuplicateTabs();
-    logger.info('Single click: Removed duplicate tabs', { removedCount });
+    await logger.info('Single click: Removed duplicate tabs', { removedCount });
     setBadge(removedCount.toString(), '#4CAF50');
 
     setTimeout(() => {
       updateBadge();
     }, BADGE_DISPLAY_DURATION);
   } catch (error) {
-    logger.error('Error in handleSingleClick', error);
+    await logger.error('Error in handleSingleClick', error);
   }
 }
 
@@ -143,11 +143,11 @@ async function enablePopupTemporarily(): Promise<void> {
       try {
         await chrome.action.setPopup({ popup: '' });
       } catch (error) {
-        logger.error('Failed to reset popup', error);
+        await logger.error('Failed to reset popup', error);
       }
     }, POPUP_DISABLE_DELAY);
   } catch (error) {
-    logger.error('Failed to enable popup', error);
+    await logger.error('Failed to enable popup', error);
     // エラー時は完全に状態をリセット
     clickState.count = 0;
     clickState.firstClickTime = 0;
