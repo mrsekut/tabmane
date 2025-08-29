@@ -1,7 +1,7 @@
 {
   "name": "tabmane",
   "displayName": "tabmane",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Simple tab management",
   "author": "mrsekut",
   "scripts": {
