@@ -10,6 +10,7 @@ type ClickState = {
   count: number;
   firstClickTime: number;
   timer: ClickTimer;
+  timerId?: number; // デバッグ用：タイマーIDを別途保存
 };
 
 const DOUBLE_CLICK_DELAY = 500;
@@ -21,22 +22,52 @@ let clickState: ClickState = {
   count: 0,
   firstClickTime: 0,
   timer: null,
+  timerId: undefined,
 };
 
 // Service Workerの状態をログ出力（デバッグ用）
 chrome.runtime.onSuspend?.addListener(async () => {
-  await logger.info('Service Worker suspending', { clickState });
+  await logger.info('Service Worker suspending', {
+    clickState: {
+      count: clickState.count,
+      firstClickTime: clickState.firstClickTime,
+      hasTimer: clickState.timer !== null,
+      timerId: clickState.timerId,
+    },
+    timestamp: Date.now(),
+  });
 });
 
 chrome.runtime.onStartup?.addListener(async () => {
-  await logger.info('Service Worker starting up');
+  await logger.info('Service Worker starting up', {
+    timestamp: Date.now(),
+  });
   // 明示的に初期化
   clickState = {
     count: 0,
     firstClickTime: 0,
     timer: null,
+    timerId: undefined,
   };
 });
+
+// Service Workerの状態を定期的にログに記録（デバッグ用）
+let serviceWorkerStartTime = Date.now();
+let totalClicks = 0;
+
+setInterval(async () => {
+  await logger.debug('Periodic state check', {
+    serviceWorkerUptime: Date.now() - serviceWorkerStartTime,
+    clickState: {
+      count: clickState.count,
+      firstClickTime: clickState.firstClickTime,
+      hasTimer: clickState.timer !== null,
+      timerId: clickState.timerId,
+    },
+    totalClicks,
+    currentTime: Date.now(),
+  });
+}, 300000); // 5分ごとに状態を記録
 
 main();
 
@@ -52,7 +83,15 @@ function setupEventListeners() {
 
   chrome.action.onClicked.addListener(async _tab => {
     const now = Date.now();
+    totalClicks++;
     const prevState = { ...clickState };
+
+    // イベント発生時の詳細情報を記録
+    await logger.debug('Raw click event', {
+      totalClicks,
+      serviceWorkerUptime: now - serviceWorkerStartTime,
+      timestamp: now,
+    });
 
     // タイマーが存在する場合は必ずクリア
     if (clickState.timer) {
@@ -72,31 +111,64 @@ function setupEventListeners() {
     }
 
     await logger.debug('Click detected', {
-      prevState,
-      currentState: { ...clickState },
+      prevState: {
+        count: prevState.count,
+        firstClickTime: prevState.firstClickTime,
+        hasTimer: prevState.timer !== null,
+        timerId: prevState.timerId,
+      },
+      currentState: {
+        count: clickState.count,
+        firstClickTime: clickState.firstClickTime,
+        hasTimer: clickState.timer !== null,
+        timerId: clickState.timerId,
+      },
       timeSinceFirst: now - clickState.firstClickTime,
+      currentTimestamp: now,
     });
 
     // ダブルクリック判定（2回以上のクリック）
     if (clickState.count >= 2) {
-      await logger.info('Double click detected');
+      await logger.info('Double click detected', {
+        clickInterval: now - clickState.firstClickTime,
+        totalClicks,
+      });
       // 即座にカウントをリセット
       clickState.count = 0;
       clickState.firstClickTime = 0;
+      clickState.timerId = undefined;
       await handleDoubleClick();
     } else {
       // シングルクリックの可能性がある場合
-      clickState.timer = setTimeout(async () => {
+      const timer = setTimeout(async () => {
         // タイマー実行時に再度カウントを確認
+        const confirmTime = Date.now();
         if (clickState.count === 1) {
-          await logger.info('Single click confirmed');
+          await logger.info('Single click confirmed', {
+            count: clickState.count,
+            firstClickTime: clickState.firstClickTime,
+            confirmTime,
+            delayFromClick: confirmTime - clickState.firstClickTime,
+            totalClicks,
+          });
           await handleSingleClick();
+        } else {
+          await logger.warn('Timer fired but count is not 1', {
+            count: clickState.count,
+            firstClickTime: clickState.firstClickTime,
+            confirmTime,
+          });
         }
         // タイマー実行後は必ずリセット
         clickState.count = 0;
         clickState.firstClickTime = 0;
         clickState.timer = null;
+        clickState.timerId = undefined;
       }, DOUBLE_CLICK_DELAY);
+
+      clickState.timer = timer;
+      // タイマーIDをデバッグ用に保存（数値として）
+      clickState.timerId = timer as unknown as number;
     }
   });
 }
@@ -155,5 +227,6 @@ async function enablePopupTemporarily(): Promise<void> {
       clearTimeout(clickState.timer);
       clickState.timer = null;
     }
+    clickState.timerId = undefined;
   }
 }
