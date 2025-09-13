@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { logger } from '../../../shared/services/logger';
+import { logger } from '../../shared/services/logger';
 
 type LogEntry = {
   timestamp: number;

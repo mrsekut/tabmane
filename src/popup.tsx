@@ -1,5 +1,5 @@
 import { ClipboardButtons } from './features/tab-clipboard/ClipboardButtons';
-import { LogViewer } from './features/debug/components/LogViewer';
+import { LogViewer } from './features/debug/LogViewer';
 
 function IndexPopup() {
   return (
