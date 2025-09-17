@@ -1,5 +1,4 @@
 import { ClipboardButtons } from './features/tab-clipboard/ClipboardButtons';
-import { LogViewer } from './features/debug/LogViewer';
 
 function IndexPopup() {
   return (
@@ -15,7 +14,6 @@ function IndexPopup() {
       }}
     >
       <ClipboardButtons />
-      <LogViewer />
     </div>
   );
 }

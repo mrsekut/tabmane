@@ -1,13 +1,7 @@
-import { logger } from '../../shared/services/logger';
-
 const POPUP_FILE = 'popup.html';
 const DISABLE_DELAY = 100;
 
 export async function showPopup(): Promise<void> {
-  await logger.debug('Double click handling', {
-    timestamp: new Date().toISOString(),
-  });
-
   const startTime = Date.now();
   let resetTimer: NodeJS.Timeout | null = null;
 
@@ -27,8 +21,6 @@ export async function showPopup(): Promise<void> {
     // ポップアップを開く
     await chrome.action.openPopup();
   } catch (error) {
-    await handlePopupError(error, startTime);
-
     // エラー時の後処理
     await cleanupAfterError(resetTimer);
   }
@@ -40,31 +32,6 @@ async function enablePopup(): Promise<void> {
 
 export async function disablePopup(): Promise<void> {
   await chrome.action.setPopup({ popup: '' });
-}
-
-async function handlePopupError(
-  error: unknown,
-  startTime: number,
-): Promise<void> {
-  await logger.error('Failed to open popup', {
-    error:
-      error instanceof Error
-        ? {
-            message: error.message,
-            stack: error.stack,
-          }
-        : error,
-    timing: {
-      elapsed: Date.now() - startTime,
-      timestamp: new Date().toISOString(),
-    },
-    chrome: {
-      runtime: {
-        id: chrome.runtime.id,
-        lastError: chrome.runtime.lastError,
-      },
-    },
-  });
 }
 
 async function cleanupAfterError(
