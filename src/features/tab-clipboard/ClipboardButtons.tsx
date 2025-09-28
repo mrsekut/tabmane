@@ -1,5 +1,5 @@
 import { ActionButton } from '../../shared/components/ActionButton';
-import { copyTabUrls, pasteTabUrls } from './service';
+import { copyTabUrls, openTabUrls } from './service';
 
 export const ClipboardButtons = () => {
   return (
@@ -13,11 +13,11 @@ export const ClipboardButtons = () => {
       </ActionButton>
 
       <ActionButton
-        onClick={pasteTabUrls}
+        onClick={openTabUrls}
         successMessage={count => `Opened ${count} tabs`}
-        errorMessage="Failed to paste URLs"
+        errorMessage="Failed to open URLs"
       >
-        Paste URLs
+        Open URLs
       </ActionButton>
     </>
   );

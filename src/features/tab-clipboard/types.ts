@@ -1,3 +1,3 @@
 export type TabUrl = string;
 
-export type ClipboardAction = 'copy' | 'paste';
+export type ClipboardAction = 'copy' | 'open';

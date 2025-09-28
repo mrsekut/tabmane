@@ -7,7 +7,7 @@ export const copyTabUrls = async () => {
   return urls.length;
 };
 
-export const pasteTabUrls = async () => {
+export const openTabUrls = async () => {
   const text = await navigator.clipboard.readText();
   const urls = parseUrlsFromText(text);
   const validUrls = urls.filter(isValidUrl);
