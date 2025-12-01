@@ -32,9 +32,16 @@ function initializeServices() {
     },
   });
 
-  // Chrome拡張機能のイベントリスナー設定
   chrome.runtime.onInstalled.addListener(() => {
     disablePopup();
+  });
+
+  chrome.runtime.onConnect.addListener(port => {
+    if (port.name === 'popup') {
+      port.onDisconnect.addListener(() => {
+        disablePopup();
+      });
+    }
   });
 
   chrome.action.onClicked.addListener(_tab => {
