@@ -1,33 +1,27 @@
-This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
+# Tabmane
 
-## Getting Started
+A simple Chrome extension for tab management.
 
-First, run the development server:
+## Install
 
-```bash
-pnpm dev
-# or
-npm run dev
-```
+[Chrome Web Store](https://chromewebstore.google.com/detail/tabmane/lkiipjfhkmchacakagikppdcpophifdn?authuser=0&hl=ja)
 
-Open your browser and load the appropriate development build. For example, if you are developing for the chrome browser, using manifest v3, use: `build/chrome-mv3-dev`.
+## Features
 
-You can start editing the popup by modifying `popup.tsx`. It should auto-update as you make changes. To add an options page, simply add a `options.tsx` file to the root of the project, with a react component default exported. Likewise to add a content page, add a `content.ts` file to the root of the project, importing some module and do some logic, then reload the extension on your browser.
+- Display total tab count across all windows
+- Remove duplicate tabs within the same window (single click)
+- Double click to open a popup with the following actions:
+  - **Copy URLs**: Copy all tab URLs in the current window to clipboard
+  - **Open URLs**: Read URLs from clipboard and open them in new tabs
 
-For further guidance, [visit our Documentation](https://docs.plasmo.com/)
-
-## Making production build
-
-Run the following:
+## Development
 
 ```bash
-pnpm build
-# or
-npm run build
+bun install
 ```
 
-This should create a production bundle for your extension, ready to be zipped and published to the stores.
+Enable Developer Mode at `chrome://extensions/` and load the `build/chrome-mv3-dev` directory.
 
-## Submit to the webstores
-
-The easiest way to deploy your Plasmo extension is to use the built-in [bpp](https://bpp.browser.market) GitHub action. Prior to using this action however, make sure to build your extension and upload the first version to the store to establish the basic credentials. Then, simply follow [this setup instruction](https://docs.plasmo.com/framework/workflows/submit) and you should be on your way for automated submission!
+```bash
+bun run dev
+```
