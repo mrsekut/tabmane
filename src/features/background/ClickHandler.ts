@@ -2,19 +2,16 @@ type ClickHandlerConfig = {
   onSingleClick: () => Promise<void>;
   onDoubleClick: () => Promise<void>;
   doubleClickDelay?: number;
-  clickResetDelay?: number;
 };
 
 type ClickState = {
   count: number;
-  firstClickTime: number;
   timer: NodeJS.Timeout | null;
 };
 
 export class ClickHandler {
   private state: ClickState = {
     count: 0,
-    firstClickTime: 0,
     timer: null,
   };
 
@@ -22,19 +19,16 @@ export class ClickHandler {
 
   constructor(config: ClickHandlerConfig) {
     this.config = {
-      doubleClickDelay: 500,
-      clickResetDelay: 600,
+      doubleClickDelay: 300,
       ...config,
     };
   }
 
   handleClick(): void {
-    const now = Date.now();
-
     this.clearTimer();
 
-    if (this.shouldResetState(now)) {
-      this.resetToFirstClick(now);
+    if (this.shouldResetState()) {
+      this.resetToFirstClick();
     } else {
       this.incrementClickCount();
     }
@@ -42,7 +36,7 @@ export class ClickHandler {
     if (this.isDoubleClick()) {
       this.handleDoubleClick();
     } else {
-      this.scheduleeSingleClick();
+      this.scheduleSingleClick();
     }
   }
 
@@ -53,16 +47,12 @@ export class ClickHandler {
     }
   }
 
-  private shouldResetState(now: number): boolean {
-    return (
-      this.state.count === 0 ||
-      now - this.state.firstClickTime > this.config.clickResetDelay
-    );
+  private shouldResetState(): boolean {
+    return this.state.count === 0;
   }
 
-  private resetToFirstClick(now: number): void {
+  private resetToFirstClick(): void {
     this.state.count = 1;
-    this.state.firstClickTime = now;
   }
 
   private incrementClickCount(): void {
@@ -78,7 +68,7 @@ export class ClickHandler {
     this.config.onDoubleClick();
   }
 
-  private scheduleeSingleClick(): void {
+  private scheduleSingleClick(): void {
     this.state.timer = setTimeout(() => {
       if (this.state.count === 1) {
         this.config.onSingleClick();
@@ -89,7 +79,6 @@ export class ClickHandler {
 
   private resetState(): void {
     this.state.count = 0;
-    this.state.firstClickTime = 0;
     this.state.timer = null;
   }
 }
