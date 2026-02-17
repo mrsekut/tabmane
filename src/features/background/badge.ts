@@ -1,9 +1,9 @@
 type BadgeColor = 'success' | 'default';
 
-const COLORS: Record<BadgeColor, string> = {
+const COLORS = {
   success: '#4CAF50',
   default: '#666',
-};
+} as const satisfies Record<BadgeColor, string>;
 
 const DISPLAY_DURATION = 3000;
 

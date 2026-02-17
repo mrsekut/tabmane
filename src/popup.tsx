@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { ClipboardButtons } from './features/tab-clipboard/ClipboardButtons';
+import { ClipboardButtons } from './features/copyTabs/ClipboardButtons';
 
 function IndexPopup() {
   useEffect(() => {
-    // background との接続を確立。接続が切れた時（popup が閉じた時）に
-    // background 側で disablePopup() が呼ばれる
+    // Establish connection with background.
+    // When disconnected (popup closed), background calls disablePopup().
     chrome.runtime.connect({ name: 'popup' });
   }, []);
 

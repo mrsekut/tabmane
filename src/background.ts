@@ -1,19 +1,16 @@
-import { initializeTabCounter } from './features/tab-counter/service';
+import { initializeTabCounter } from './features/countTabs/service';
 import { ClickHandler } from './features/background/ClickHandler';
 import { showTemporaryBadge } from './features/background/badge';
 import { showPopup, disablePopup } from './features/background/popup';
-import { removeDuplicateTabs } from './features/tab-duplicates/service';
+import { removeDuplicateTabs } from './features/removeDuplicateTabs/service';
 
 export {};
 
-// 初期化
 initializeServices();
 
 function initializeServices() {
-  // タブカウンターの初期化
   initializeTabCounter();
 
-  // クリックハンドラーの設定
   const clickHandler = new ClickHandler({
     onSingleClick: async () => {
       try {

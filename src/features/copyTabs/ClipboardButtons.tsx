@@ -1,4 +1,4 @@
-import { ActionButton } from '../../shared/components/ActionButton';
+import { ActionButton } from '../../components/ActionButton';
 import { copyTabUrls, openTabUrls } from './service';
 
 export const ClipboardButtons = () => {

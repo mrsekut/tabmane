@@ -1,4 +1,4 @@
-import type { TabUrl } from './types';
+type TabUrl = string;
 
 export const copyTabUrls = async () => {
   const currentWindow = await chrome.windows.getCurrent({ populate: true });
