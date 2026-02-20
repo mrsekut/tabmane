@@ -1,6 +1,12 @@
+<div class="title-block" style="text-align: center;" align="center">
+
 # Tabmane
 
 A simple Chrome extension for tab management.
+
+<p><img title="tabmane logo" src="assets/icon.png" width="320" height="320"></p>
+
+</div>
 
 ## Install
 
